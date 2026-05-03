@@ -1,1 +1,717 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NAIXORA GAMES</title>
 
+<style>
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;
+  background:#06192b;
+  color:white;
+}
+
+body{
+  background:radial-gradient(circle at top,#155282,#06192b 58%,#020914);
+}
+
+canvas{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+
+/* SPLASH */
+#splash{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:grid;
+  place-items:center;
+  background:
+    radial-gradient(circle at center,rgba(43,151,255,.30),rgba(2,9,20,.95) 62%),
+    linear-gradient(180deg,#06192b,#020914);
+  transition:opacity .8s ease, visibility .8s ease;
+}
+
+#splash.hide{
+  opacity:0;
+  visibility:hidden;
+}
+
+.splashBox{
+  text-align:center;
+  animation:zoomIn 1s ease;
+}
+
+.splashSmall{
+  font-size:13px;
+  letter-spacing:.24em;
+  font-weight:900;
+  color:#aeefff;
+  margin-bottom:12px;
+}
+
+.splashTitle{
+  font-size:clamp(42px,8vw,96px);
+  font-weight:1000;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  text-shadow:0 0 35px rgba(114,221,255,.85);
+}
+
+.loading{
+  width:min(360px,70vw);
+  height:10px;
+  margin:28px auto 0;
+  border-radius:999px;
+  background:rgba(255,255,255,.13);
+  overflow:hidden;
+  border:1px solid rgba(170,235,255,.30);
+}
+
+.loading span{
+  display:block;
+  width:0%;
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#7be8ff,#2f8cff);
+  animation:load 5s linear forwards;
+}
+
+.loadingText{
+  margin-top:14px;
+  font-size:12px;
+  letter-spacing:.18em;
+  color:#d8f8ff;
+  font-weight:800;
+}
+
+@keyframes load{
+  from{width:0%}
+  to{width:100%}
+}
+
+@keyframes zoomIn{
+  from{opacity:0;transform:scale(.92)}
+  to{opacity:1;transform:scale(1)}
+}
+
+/* MENU */
+.ui{
+  position:relative;
+  z-index:2;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  opacity:0;
+  transform:translateY(14px);
+  transition:opacity .9s ease, transform .9s ease;
+}
+
+.ui.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.wrap{
+  width:min(1120px,94vw);
+  text-align:center;
+}
+
+.brand{
+  letter-spacing:.22em;
+  color:#b6f2ff;
+  font-size:12px;
+  font-weight:1000;
+  margin-bottom:12px;
+}
+
+h1{
+  font-size:clamp(28px,4vw,48px);
+  margin:0 0 10px;
+  text-transform:uppercase;
+  text-shadow:0 0 22px rgba(114,221,255,.68);
+}
+
+.menuLine{
+  width:160px;
+  height:3px;
+  margin:0 auto 22px;
+  border-radius:999px;
+  background:linear-gradient(90deg,transparent,#8deaff,transparent);
+  box-shadow:0 0 18px rgba(141,234,255,.8);
+}
+
+/* CAROUSEL */
+.carouselArea{
+  position:relative;
+  width:100%;
+  height:390px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.gameCard{
+  position:absolute;
+  width:315px;
+  height:270px;
+  border-radius:30px;
+  padding:22px 24px;
+  text-align:center;
+  background:
+    linear-gradient(145deg,#061d34,#0d4f7e 58%,#0b75a5);
+  border:1px solid rgba(185,238,255,.58);
+  box-shadow:
+    0 24px 70px rgba(0,0,0,.42),
+    inset 0 0 24px rgba(255,255,255,.05);
+  overflow:hidden;
+  transition:
+    transform .55s ease,
+    opacity .55s ease,
+    filter .55s ease,
+    width .55s ease,
+    height .55s ease;
+}
+
+.gameCard::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(255,255,255,.16),transparent 42%),
+    linear-gradient(120deg,transparent,rgba(255,255,255,.08),transparent);
+  pointer-events:none;
+}
+
+.gameCard::after{
+  content:"";
+  position:absolute;
+  inset:-45%;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.18),transparent);
+  transform:translateX(-120%);
+  pointer-events:none;
+}
+
+.gameCard.active{
+  width:365px;
+  height:305px;
+  transform:translateX(0) scale(1);
+  opacity:1;
+  z-index:5;
+  filter:none;
+  border-color:#d6f8ff;
+  box-shadow:
+    0 34px 95px rgba(20,140,255,.45),
+    0 0 0 1px rgba(255,255,255,.08),
+    inset 0 0 35px rgba(114,221,255,.13);
+}
+
+.gameCard.active::after{
+  animation:cardShine 3s ease-in-out infinite;
+}
+
+@keyframes cardShine{
+  0%{transform:translateX(-120%)}
+  45%{transform:translateX(120%)}
+  100%{transform:translateX(120%)}
+}
+
+.gameCard.left{
+  transform:translateX(-365px) scale(.80);
+  opacity:.68;
+  z-index:2;
+  filter:brightness(.76);
+}
+
+.gameCard.right{
+  transform:translateX(365px) scale(.80);
+  opacity:.68;
+  z-index:2;
+  filter:brightness(.76);
+}
+
+.cardContent{
+  position:relative;
+  z-index:2;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+/* CARTOON IMAGES */
+.cardArt{
+  width:96px;
+  height:86px;
+  margin-bottom:16px;
+  position:relative;
+}
+
+.art-danger .head{
+  position:absolute;
+  left:30px;
+  top:3px;
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  background:#7ee8ff;
+  box-shadow:0 0 18px rgba(126,232,255,.55);
+}
+
+.art-danger .eye{
+  position:absolute;
+  top:17px;
+  width:8px;
+  height:8px;
+  background:#ff3f68;
+  border-radius:50%;
+  z-index:2;
+}
+
+.art-danger .eye.left{left:40px}
+.art-danger .eye.right{left:56px}
+
+.art-danger .body{
+  position:absolute;
+  left:24px;
+  top:44px;
+  width:55px;
+  height:34px;
+  border-radius:12px;
+  background:#1f74d8;
+}
+
+.art-danger .gun{
+  position:absolute;
+  left:67px;
+  top:55px;
+  width:40px;
+  height:9px;
+  border-radius:8px;
+  background:#d8f8ff;
+  box-shadow:0 0 14px rgba(216,248,255,.5);
+}
+
+.art-math .board{
+  position:absolute;
+  left:12px;
+  top:8px;
+  width:72px;
+  height:54px;
+  border-radius:14px;
+  background:#0a2d4d;
+  border:3px solid #8deaff;
+  box-shadow:0 0 18px rgba(141,234,255,.45);
+}
+
+.art-math .num{
+  position:absolute;
+  left:27px;
+  top:20px;
+  color:white;
+  font-size:26px;
+  font-weight:1000;
+}
+
+.art-math .zap{
+  position:absolute;
+  right:5px;
+  bottom:4px;
+  width:22px;
+  height:38px;
+  background:#8deaff;
+  clip-path:polygon(45% 0,100% 0,62% 42%,100% 42%,30% 100%,45% 55%,0 55%);
+  filter:drop-shadow(0 0 10px #8deaff);
+}
+
+.art-pet .face{
+  position:absolute;
+  left:25px;
+  top:12px;
+  width:52px;
+  height:48px;
+  border-radius:18px 18px 22px 22px;
+  background:#8deaff;
+  box-shadow:0 0 18px rgba(141,234,255,.45);
+}
+
+.art-pet .ear{
+  position:absolute;
+  top:3px;
+  width:20px;
+  height:20px;
+  background:#8deaff;
+  transform:rotate(45deg);
+  border-radius:6px;
+}
+
+.art-pet .ear.left{left:26px}
+.art-pet .ear.right{right:20px}
+
+.art-pet .eye{
+  position:absolute;
+  top:31px;
+  width:7px;
+  height:7px;
+  background:#062039;
+  border-radius:50%;
+  z-index:2;
+}
+
+.art-pet .eye.left{left:41px}
+.art-pet .eye.right{left:58px}
+
+.art-pet .nose{
+  position:absolute;
+  left:49px;
+  top:42px;
+  width:9px;
+  height:7px;
+  border-radius:50%;
+  background:#ff6c8a;
+  z-index:2;
+}
+
+.title{
+  font-size:33px;
+  font-weight:1000;
+  line-height:1.12;
+  margin-bottom:20px;
+}
+
+.cardPlay{
+  width:145px;
+  height:44px;
+  border:0;
+  border-radius:999px;
+  background:linear-gradient(135deg,#7be8ff,#2f8cff);
+  color:white;
+  font-size:14px;
+  font-weight:1000;
+  letter-spacing:.16em;
+  cursor:pointer;
+  box-shadow:0 12px 28px rgba(47,140,255,.38);
+  transition:.25s ease;
+  display:none;
+}
+
+.gameCard.active .cardPlay{
+  display:block;
+}
+
+.cardPlay:hover{
+  transform:scale(1.06);
+  box-shadow:0 18px 42px rgba(47,140,255,.52);
+}
+
+/* NAV */
+.navBtn{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:10;
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  border:1px solid rgba(170,235,255,.42);
+  background:rgba(7,31,55,.88);
+  color:white;
+  font-size:32px;
+  font-weight:900;
+  cursor:pointer;
+  backdrop-filter:blur(10px);
+  box-shadow:0 18px 48px rgba(0,0,0,.30);
+  transition:.25s ease;
+}
+
+.navBtn:hover{
+  background:rgba(52,150,255,.85);
+  transform:translateY(-50%) scale(1.08);
+}
+
+#prevBtn{left:24px}
+#nextBtn{right:24px}
+
+.sangarText{
+  margin-top:8px;
+  font-size:12px;
+  letter-spacing:.20em;
+  color:#b6f2ff;
+  font-weight:900;
+  text-shadow:0 0 16px rgba(141,234,255,.7);
+}
+
+/* RESPONSIVE */
+@media(max-width:980px){
+  .carouselArea{height:380px}
+  .gameCard.active{width:330px;height:295px}
+  .gameCard.left{transform:translateX(-290px) scale(.72)}
+  .gameCard.right{transform:translateX(290px) scale(.72)}
+}
+
+@media(max-width:720px){
+  body{overflow:auto}
+
+  .ui{
+    min-height:100vh;
+    padding:20px 14px;
+  }
+
+  h1{
+    font-size:32px;
+    margin-bottom:12px;
+  }
+
+  .brand{font-size:11px}
+
+  .carouselArea{height:360px}
+
+  .gameCard{
+    width:285px;
+    height:270px;
+  }
+
+  .gameCard.active{
+    width:300px;
+    height:295px;
+  }
+
+  .gameCard.left,
+  .gameCard.right{
+    opacity:0;
+    pointer-events:none;
+  }
+
+  .navBtn{
+    width:50px;
+    height:50px;
+    font-size:28px;
+  }
+
+  #prevBtn{left:0}
+  #nextBtn{right:0}
+
+  .title{font-size:29px}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="bg"></canvas>
+
+<div id="splash">
+  <div class="splashBox">
+    <div class="splashSmall">WELCOME TO</div>
+    <div class="splashTitle">NAIXORA GAMES</div>
+    <div class="loading"><span></span></div>
+    <div class="loadingText">LOADING...</div>
+  </div>
+</div>
+
+<div id="mainMenu" class="ui">
+  <div class="wrap">
+    <div class="brand">PILIH GAME</div>
+    <h1>NAIXORA GAMES</h1>
+    <div class="menuLine"></div>
+
+    <div class="carouselArea">
+      <button class="navBtn" id="prevBtn">‹</button>
+
+      <div class="gameCard active">
+        <div class="cardContent">
+          <div class="title">Danger Zone</div>
+          <button class="cardPlay">PLAY</button>
+        </div>
+      </div>
+
+      <div class="gameCard right">
+        <div class="cardContent">
+          <div class="title">Quick Math</div>
+          <button class="cardPlay">PLAY</button>
+        </div>
+      </div>
+
+      <div class="gameCard left">
+        <div class="cardContent">
+          <div class="title">Pet World</div>
+          <button class="cardPlay">PLAY</button>
+        </div>
+      </div>
+
+      <button class="navBtn" id="nextBtn">›</button>
+    </div>
+
+    <div class="sangarText">READY TO PLAY</div>
+  </div>
+</div>
+
+<script>
+const splash = document.getElementById("splash");
+const mainMenu = document.getElementById("mainMenu");
+
+setTimeout(() => {
+  splash.classList.add("hide");
+  mainMenu.classList.add("show");
+}, 5000);
+
+const cards = document.querySelectorAll(".gameCard");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+
+const games = [
+  "../GameShooter/index.html",
+  "../GameMatematika/index.html",
+  "../GameMumed/index.html"
+];
+
+let current = 0;
+
+function updateCarousel(){
+  cards.forEach((card,index) => {
+    card.classList.remove("active","left","right","hidden");
+
+    if(index === current){
+      card.classList.add("active");
+    }else if(index === (current + 1) % cards.length){
+      card.classList.add("right");
+    }else if(index === (current - 1 + cards.length) % cards.length){
+      card.classList.add("left");
+    }else{
+      card.classList.add("hidden");
+    }
+  });
+}
+
+function goNext(){
+  current = (current + 1) % cards.length;
+  updateCarousel();
+}
+
+function goPrev(){
+  current = (current - 1 + cards.length) % cards.length;
+  updateCarousel();
+}
+
+function playGame(){
+  window.location.href = games[current];
+}
+
+nextBtn.addEventListener("click", goNext);
+prevBtn.addEventListener("click", goPrev);
+
+document.querySelectorAll(".cardPlay").forEach(button => {
+  button.addEventListener("click", playGame);
+});
+
+document.addEventListener("keydown", (e) => {
+  if(e.key === "ArrowRight") goNext();
+  if(e.key === "ArrowLeft") goPrev();
+  if(e.key === "Enter") playGame();
+});
+
+updateCarousel();
+
+/* BACKGROUND */
+const canvas = document.getElementById("bg");
+const ctx = canvas.getContext("2d");
+
+let W;
+let H;
+let DPR;
+let stars = [];
+
+function resize(){
+  W = window.innerWidth;
+  H = window.innerHeight;
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+
+  stars = Array.from({length:120}, () => ({
+    x:Math.random()*W,
+    y:Math.random()*H,
+    s:Math.random()*2+1,
+    v:Math.random()*.45+.1
+  }));
+}
+
+window.addEventListener("resize", resize);
+resize();
+
+function drawTree(px, py, s){
+  ctx.save();
+  ctx.translate(px, py);
+  ctx.scale(s, s);
+
+  ctx.fillStyle = "#0d2b43";
+  ctx.fillRect(-7,20,14,58);
+
+  const grad = ctx.createRadialGradient(0,-25,8,0,-10,76);
+  grad.addColorStop(0,"#9decff");
+  grad.addColorStop(.45,"#2c95d0");
+  grad.addColorStop(1,"#07517e");
+
+  ctx.fillStyle = grad;
+
+  for(let i=0;i<3;i++){
+    ctx.beginPath();
+    ctx.moveTo(0,-82+i*35);
+    ctx.lineTo(-55+i*8,35+i*15);
+    ctx.lineTo(55-i*8,35+i*15);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function animate(){
+  ctx.clearRect(0,0,W,H);
+
+  const bg = ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,"#061a32");
+  bg.addColorStop(.58,"#155282");
+  bg.addColorStop(1,"#082a50");
+
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,W,H);
+
+  for(const star of stars){
+    star.y += star.v;
+    if(star.y > H) star.y = 0;
+
+    ctx.fillStyle = "rgba(200,245,255,.65)";
+    ctx.fillRect(star.x, star.y, star.s, star.s);
+  }
+
+  for(let i=0;i<16;i++){
+    drawTree(
+      i*130-80,
+      H-90+Math.sin(i)*16,
+      1.05+(i%4)*.18
+    );
+  }
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>

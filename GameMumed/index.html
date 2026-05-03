@@ -1,1 +1,823 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Pet World</title>
 
+<style>
+:root{
+  --blue:#53cfff;
+  --dark:#06192b;
+  --panel:rgba(5,25,45,.78);
+  --line:rgba(160,235,255,.35);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#06192b;
+  color:white;
+  font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;
+}
+
+canvas{
+  display:block;
+  width:100vw;
+  height:100vh;
+}
+
+.hud{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+}
+
+.panel{
+  position:absolute;
+  top:16px;
+  padding:13px 16px;
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(6,29,54,.88),rgba(13,79,126,.62));
+  border:1px solid var(--line);
+  box-shadow:0 18px 45px rgba(0,0,0,.28),inset 0 0 20px rgba(114,221,255,.08);
+  backdrop-filter:blur(12px);
+}
+
+.left{
+  left:16px;
+  width:235px;
+}
+
+.label{
+  font-size:11px;
+  letter-spacing:.16em;
+  color:#baf1ff;
+  font-weight:900;
+  text-transform:uppercase;
+}
+
+.big{
+  font-size:28px;
+  font-weight:1000;
+  line-height:1.1;
+}
+
+.bar{
+  height:10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  margin:8px 0 12px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.15);
+}
+
+.fill{
+  height:100%;
+  width:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#6ff2b2,#73dcff);
+}
+
+.centerMenu{
+  position:fixed;
+  inset:0;
+  display:grid;
+  place-items:center;
+  background:radial-gradient(circle at center,rgba(47,140,255,.20),rgba(1,6,14,.84) 60%,rgba(0,0,0,.92));
+  z-index:5;
+}
+
+.card{
+  width:min(620px,92vw);
+  padding:28px;
+  border-radius:30px;
+  text-align:center;
+  background:linear-gradient(145deg,rgba(6,29,54,.94),rgba(12,84,130,.78));
+  border:1px solid rgba(185,238,255,.35);
+  box-shadow:0 35px 90px rgba(0,0,0,.56);
+}
+
+h1{
+  margin:0 0 12px;
+  font-size:clamp(34px,6vw,70px);
+  text-transform:uppercase;
+  text-shadow:0 0 28px rgba(114,221,255,.7);
+}
+
+p{
+  margin:0 auto 20px;
+  max-width:500px;
+  color:#d8f4ff;
+  line-height:1.55;
+}
+
+button{
+  pointer-events:auto;
+  border:0;
+  border-radius:16px;
+  padding:14px 22px;
+  margin:7px;
+  background:linear-gradient(135deg,#7be8ff,#2f8cff);
+  color:white;
+  font-weight:1000;
+  letter-spacing:.08em;
+  cursor:pointer;
+  box-shadow:0 14px 30px rgba(47,140,255,.34);
+}
+
+button.secondary{
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.22);
+}
+
+.toast{
+  position:fixed;
+  left:50%;
+  top:86px;
+  transform:translateX(-50%);
+  padding:10px 18px;
+  border-radius:999px;
+  background:rgba(5,24,44,.78);
+  border:1px solid var(--line);
+  opacity:0;
+  transition:.25s;
+  z-index:6;
+  pointer-events:none;
+}
+
+.mobile{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:20px;
+  display:none;
+  justify-content:space-between;
+  padding:0 18px;
+  pointer-events:none;
+}
+
+.stick{
+  width:126px;
+  height:126px;
+  border-radius:50%;
+  background:rgba(4,26,48,.54);
+  border:1px solid rgba(145,220,255,.30);
+  pointer-events:auto;
+  position:relative;
+}
+
+.knob{
+  position:absolute;
+  left:41px;
+  top:41px;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:rgba(114,221,255,.65);
+  box-shadow:0 0 24px rgba(114,221,255,.35);
+}
+
+.fire{
+  width:98px;
+  height:98px;
+  border-radius:50%;
+  align-self:flex-end;
+  background:radial-gradient(circle,#e9fbff,#3998ff 70%);
+  border:4px solid rgba(255,255,255,.35);
+  color:#031327;
+  text-align:center;
+  line-height:90px;
+  font-weight:1000;
+  pointer-events:auto;
+}
+
+.tip{
+  position:fixed;
+  left:50%;
+  bottom:24px;
+  transform:translateX(-50%);
+  padding:11px 18px;
+  border-radius:999px;
+  background:rgba(5,24,44,.72);
+  border:1px solid rgba(170,235,255,.32);
+  color:#d8f8ff;
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:.08em;
+  display:none;
+  z-index:4;
+  pointer-events:none;
+}
+
+@media(max-width:780px){
+  .mobile{display:flex}
+
+  .left{
+    left:10px;
+    top:10px;
+    width:205px;
+  }
+
+  .big{
+    font-size:22px;
+  }
+
+  .tip{
+    bottom:155px;
+  }
+
+  .card{
+    padding:22px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<div class="hud">
+  <div class="panel left">
+    <div class="label">NYAWAs</div>
+    <div class="bar"><div id="hpFill" class="fill"></div></div>
+
+    <div class="label">MODE</div>
+    <div class="big">PET</div>
+
+    <div class="label" style="margin-top:12px">SCORE</div>
+    <div id="scoreText" class="big">0</div>
+
+    <div class="label" style="margin-top:8px">LEVEL</div>
+    <div id="levelText" class="big">1</div>
+  </div>
+</div>
+
+<div id="menu" class="centerMenu">
+  <div class="card">
+    <h1>Pet World</h1>
+    <p>Klik hewan yang berpindah-pindah. Kumpulkan skor sebanyak mungkin.</p>
+    <button onclick="startGame()">MULAI</button>
+    <button class="secondary" onclick="location.href='../ComplexGames/index.html'">KEMBALI</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="tip" class="tip">KLIK HEWAN YANG BERGERAK</div>
+
+<div class="mobile">
+  <div id="joy" class="stick">
+    <div id="knob" class="knob"></div>
+  </div>
+  <div id="fireBtn" class="fire">TAP</div>
+</div>
+
+<script>
+const MODE = "pet";
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const hpFill = document.getElementById("hpFill");
+const scoreText = document.getElementById("scoreText");
+const levelText = document.getElementById("levelText");
+const menu = document.getElementById("menu");
+const toastEl = document.getElementById("toast");
+const tip = document.getElementById("tip");
+
+let W = innerWidth;
+let H = innerHeight;
+let DPR = 1;
+
+function resize(){
+  W = innerWidth;
+  H = innerHeight;
+  DPR = Math.min(devicePixelRatio || 1, 2);
+
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+
+addEventListener("resize",resize);
+resize();
+
+const rnd = (a,b) => a + Math.random() * (b-a);
+const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+const len = (x,y) => Math.hypot(x,y) || 1;
+
+let keys = {};
+let pointer = {x:W/2,y:H/2};
+let player;
+let trees = [];
+let pets = [];
+let floating = [];
+let particles = [];
+let score = 0;
+let level = 1;
+let running = false;
+let last = 0;
+let joyVec = {x:0,y:0};
+
+function toast(text){
+  toastEl.textContent = text;
+  toastEl.style.opacity = 1;
+
+  clearTimeout(toastEl.t);
+  toastEl.t = setTimeout(() => {
+    toastEl.style.opacity = 0;
+  },1600);
+}
+
+function randomPetTarget(){
+  return {
+    x:rnd(-650,650),
+    y:rnd(-520,520)
+  };
+}
+
+function buildWorld(){
+  trees = [];
+
+  for(let i=0;i<90;i++){
+    let x;
+    let y;
+
+    do{
+      x = rnd(-1700,1700);
+      y = rnd(-1700,1700);
+    }while(Math.hypot(x,y) < 220);
+
+    trees.push({
+      x,
+      y,
+      s:rnd(.7,1.35),
+      t:Math.random() < .5 ? "pine" : "round"
+    });
+  }
+
+  pets = [];
+
+  const names = ["CAT","RABBIT","BIRD","FROG","DOG","DUCK"];
+  const colors = ["#8deaff","#ffe084","#ff9ec9","#7df2b5","#c9a6ff","#ffc27d"];
+
+  for(let i=0;i<names.length;i++){
+    const angle = i / names.length * Math.PI * 2;
+    const target = randomPetTarget();
+
+    pets.push({
+      x:Math.cos(angle) * rnd(190,520),
+      y:Math.sin(angle) * rnd(170,500),
+      targetX:target.x,
+      targetY:target.y,
+      moveTimer:rnd(.7,1.8),
+      r:34,
+      name:names[i],
+      color:colors[i],
+      bounce:rnd(0,6),
+      happy:0,
+      speed:rnd(70,105)
+    });
+  }
+}
+
+function reset(){
+  player = {
+    x:0,
+    y:0,
+    r:18,
+    hp:100,
+    ang:0
+  };
+
+  score = 0;
+  level = 1;
+  floating = [];
+  particles = [];
+
+  buildWorld();
+}
+
+function startGame(){
+  reset();
+  running = true;
+  last = performance.now();
+
+  menu.style.display = "none";
+  tip.style.display = "block";
+
+  toast("Klik hewan yang bergerak!");
+  requestAnimationFrame(loop);
+}
+
+addEventListener("keydown",e => {
+  keys[e.key.toLowerCase()] = true;
+
+  if(e.key === "Enter" && !running){
+    startGame();
+  }
+});
+
+addEventListener("keyup",e => {
+  keys[e.key.toLowerCase()] = false;
+});
+
+canvas.addEventListener("mousemove",e => {
+  pointer.x = e.clientX;
+  pointer.y = e.clientY;
+});
+
+canvas.addEventListener("mousedown",e => {
+  clickPet(e.clientX,e.clientY);
+});
+
+canvas.addEventListener("touchstart",e => {
+  const t = e.touches[0];
+
+  if(t){
+    clickPet(t.clientX,t.clientY);
+  }
+},{passive:true});
+
+const joy = document.getElementById("joy");
+const knob = document.getElementById("knob");
+
+function joyMove(e){
+  const t = e.touches ? e.touches[0] : e;
+  const r = joy.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+
+  let dx = t.clientX - cx;
+  let dy = t.clientY - cy;
+  const m = len(dx,dy);
+  const lim = 40;
+
+  if(m > lim){
+    dx = dx / m * lim;
+    dy = dy / m * lim;
+  }
+
+  joyVec = {
+    x:dx / lim,
+    y:dy / lim
+  };
+
+  knob.style.left = 41 + dx + "px";
+  knob.style.top = 41 + dy + "px";
+}
+
+function joyEnd(){
+  joyVec = {x:0,y:0};
+  knob.style.left = "41px";
+  knob.style.top = "41px";
+}
+
+joy.addEventListener("touchstart",joyMove);
+joy.addEventListener("touchmove",joyMove);
+joy.addEventListener("touchend",joyEnd);
+
+document.getElementById("fireBtn").addEventListener("touchstart",e => {
+  e.preventDefault();
+  clickPet(pointer.x,pointer.y);
+});
+
+function beep(freq=440,dur=.08,type="sine"){
+  try{
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.value = .04;
+
+    o.connect(g);
+    g.connect(ac.destination);
+
+    o.start();
+    o.stop(ac.currentTime + dur);
+  }catch(e){}
+}
+
+function movePetNow(pet){
+  const target = randomPetTarget();
+
+  pet.targetX = target.x;
+  pet.targetY = target.y;
+  pet.moveTimer = rnd(.55,1.45);
+}
+
+function clickPet(screenX,screenY){
+  if(!running) return;
+
+  const world = {
+    x:screenX - W/2 + player.x,
+    y:screenY - H/2 + player.y
+  };
+
+  for(const pet of pets){
+    const d = Math.hypot(world.x-pet.x,world.y-pet.y);
+
+    if(d < pet.r + 16){
+      pet.happy = .65;
+      score += 10;
+
+      floating.push({
+        x:pet.x,
+        y:pet.y-48,
+        text:pet.name+" +10",
+        life:1
+      });
+
+      for(let i=0;i<14;i++){
+        particles.push({
+          x:pet.x,
+          y:pet.y,
+          vx:rnd(-120,120),
+          vy:rnd(-120,120),
+          life:rnd(.25,.45),
+          s:rnd(2,6),
+          c:pet.color
+        });
+      }
+
+      movePetNow(pet);
+
+      beep(360+rnd(0,280),.1,"triangle");
+      toast(pet.name+"!");
+      return;
+    }
+  }
+}
+
+function update(dt){
+  level = 1 + Math.floor(score / 100);
+
+  const kx = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joyVec.x;
+  const ky = (keys.s || keys.arrowdown ? 1 : 0) - (keys.w || keys.arrowup ? 1 : 0) + joyVec.y;
+  const m = len(kx,ky);
+
+  player.x += kx / m * 235 * dt;
+  player.y += ky / m * 235 * dt;
+
+  const camX = W/2 - player.x;
+  const camY = H/2 - player.y;
+
+  player.ang = Math.atan2(
+    pointer.y - camY - player.y,
+    pointer.x - camX - player.x
+  );
+
+  for(const pet of pets){
+    pet.bounce += dt * 3.2;
+    pet.happy = Math.max(0,pet.happy-dt);
+    pet.moveTimer -= dt;
+
+    const dx = pet.targetX - pet.x;
+    const dy = pet.targetY - pet.y;
+    const d = len(dx,dy);
+
+    if(d > 4){
+      pet.x += dx / d * pet.speed * dt;
+      pet.y += dy / d * pet.speed * dt;
+    }
+
+    if(pet.moveTimer <= 0 || d < 12){
+      movePetNow(pet);
+    }
+  }
+
+  for(const p of particles){
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.life -= dt;
+    p.vx *= .94;
+    p.vy *= .94;
+  }
+
+  particles = particles.filter(p => p.life > 0);
+
+  for(const f of floating){
+    f.y -= 35 * dt;
+    f.life -= dt;
+  }
+
+  floating = floating.filter(f => f.life > 0);
+
+  hpFill.style.width = "100%";
+  scoreText.textContent = score;
+  levelText.textContent = level;
+}
+
+function screen(x,y){
+  return {
+    x:x-player.x+W/2,
+    y:y-player.y+H/2
+  };
+}
+
+function drawWorld(){
+  const g = ctx.createLinearGradient(0,0,0,H);
+
+  g.addColorStop(0,"#86d9f2");
+  g.addColorStop(.38,"#d3f2ff");
+  g.addColorStop(.42,"#2078a7");
+  g.addColorStop(1,"#09294c");
+
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,H);
+
+  ctx.save();
+  ctx.translate(W/2-player.x,H/2-player.y);
+
+  ctx.fillStyle = "#116b7e";
+  ctx.fillRect(-2200,-2200,4400,4400);
+
+  ctx.strokeStyle = "rgba(180,235,255,.10)";
+  ctx.lineWidth = 22;
+
+  for(let x=-2200;x<=2200;x+=180){
+    ctx.beginPath();
+    ctx.moveTo(x,-2200);
+    ctx.lineTo(x,2200);
+    ctx.stroke();
+  }
+
+  for(let y=-2200;y<=2200;y+=180){
+    ctx.beginPath();
+    ctx.moveTo(-2200,y);
+    ctx.lineTo(2200,y);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+
+  trees.sort((a,b)=>a.y-b.y).forEach(drawTree);
+}
+
+function drawTree(t){
+  const p = screen(t.x,t.y);
+
+  if(p.x < -130 || p.x > W+130 || p.y < -160 || p.y > H+160) return;
+
+  ctx.save();
+  ctx.translate(p.x,p.y);
+  ctx.scale(t.s,t.s);
+
+  ctx.fillStyle = "#10263a";
+  ctx.fillRect(-8,18,16,58);
+
+  const gr = ctx.createRadialGradient(-8,-25,5,0,-15,70);
+  gr.addColorStop(0,"#8be8ff");
+  gr.addColorStop(.45,"#278fc4");
+  gr.addColorStop(1,"#07517e");
+
+  ctx.fillStyle = gr;
+
+  if(t.t === "pine"){
+    for(let i=0;i<3;i++){
+      ctx.beginPath();
+      ctx.moveTo(0,-82+i*33);
+      ctx.lineTo(-50+i*7,26+i*13);
+      ctx.lineTo(50-i*7,26+i*13);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }else{
+    ctx.beginPath();
+    ctx.arc(-23,-22,38,0,7);
+    ctx.arc(18,-27,42,0,7);
+    ctx.arc(2,-58,36,0,7);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function drawPlayer(){
+  const p = screen(player.x,player.y);
+
+  ctx.save();
+  ctx.translate(p.x,p.y);
+  ctx.rotate(player.ang);
+
+  ctx.fillStyle = "rgba(0,0,0,.25)";
+  ctx.beginPath();
+  ctx.ellipse(0,18,23,8,0,0,7);
+  ctx.fill();
+
+  ctx.fillStyle = "#2f8cff";
+  ctx.fillRect(-9,-14,18,28);
+
+  ctx.fillStyle = "#f1bd89";
+  ctx.beginPath();
+  ctx.arc(4,-20,10,0,7);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawPet(pet){
+  const pos = screen(pet.x,pet.y + Math.sin(pet.bounce)*6);
+
+  ctx.save();
+  ctx.translate(pos.x,pos.y);
+
+  ctx.fillStyle = "rgba(0,0,0,.22)";
+  ctx.beginPath();
+  ctx.ellipse(0,33,38,12,0,0,7);
+  ctx.fill();
+
+  ctx.fillStyle = pet.happy > 0 ? "#ffe084" : pet.color;
+  ctx.beginPath();
+  ctx.roundRect(-32,-28,64,58,18);
+  ctx.fill();
+
+  ctx.fillStyle = pet.color;
+  ctx.beginPath();
+  ctx.moveTo(-25,-20);
+  ctx.lineTo(-42,-44);
+  ctx.lineTo(-10,-32);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(25,-20);
+  ctx.lineTo(42,-44);
+  ctx.lineTo(10,-32);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "#05233c";
+  ctx.beginPath();
+  ctx.arc(-12,-5,5,0,7);
+  ctx.arc(12,-5,5,0,7);
+  ctx.fill();
+
+  ctx.fillStyle = "#ff6c8a";
+  ctx.beginPath();
+  ctx.arc(0,8,5,0,7);
+  ctx.fill();
+
+  ctx.font = "900 13px Inter";
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#e9fbff";
+  ctx.fillText(pet.name,0,55);
+
+  ctx.restore();
+}
+
+function draw(){
+  drawWorld();
+
+  pets.forEach(drawPet);
+
+  drawPlayer();
+
+  for(const p0 of particles){
+    const p = screen(p0.x,p0.y);
+
+    ctx.globalAlpha = clamp(p0.life*3,0,1);
+    ctx.fillStyle = p0.c;
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p0.s,0,7);
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+  }
+
+  for(const f of floating){
+    const p = screen(f.x,f.y);
+
+    ctx.globalAlpha = f.life;
+    ctx.font = "900 18px Inter";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#fff";
+    ctx.fillText(f.text,p.x,p.y);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function loop(t){
+  const dt = Math.min(.033,(t-last)/1000 || .016);
+  last = t;
+
+  if(running){
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+}
+
+reset();
+draw();
+</script>
+
+</body>
+</html>

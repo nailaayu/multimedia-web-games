@@ -6,10 +6,10 @@ Project game multimedia berbasis web menggunakan HTML, CSS, dan JavaScript.
 
 * Game shooter dengan gameplay interaktif
 * Game matematika dengan sistem skor
-* Game tebak hewan
+* Game klik hewan
 * Tampilan responsif
 * Efek suara dan animasi sederhana
-* Desain game berbasis web modern
+* Desain game berbasis web
 
 ## Teknologi
 
